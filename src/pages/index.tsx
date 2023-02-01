@@ -20,6 +20,8 @@ const Home: NextPage<{ user: User; products: Array<Product> }> = (props) => {
   setStateAtom(props.user);
   setProductsAtom(props.products);
 
+  const filteredArray = [...props.products].sort((a, b) => b.cost - a.cost)
+
   return (
     <>
       <Head>
@@ -69,7 +71,7 @@ const Home: NextPage<{ user: User; products: Array<Product> }> = (props) => {
           />
         </div>
         <div className="product-showcase grid grid-cols-1 place-items-center gap-8 pb-8 md:grid-cols-4 md:flex-row md:place-items-start">
-          {props.products.map((product) => (
+          {filteredArray.map((product) => (
             <div
               key={product._id}
               className="product-card h-64 w-64 items-end bg-white shadow-md"
@@ -86,8 +88,8 @@ const Home: NextPage<{ user: User; products: Array<Product> }> = (props) => {
                   className="SeparatorRoot"
                   style={{ margin: "24px 0" }}
                 />
-                <p className="text-gray-400">Laptops</p>
-                <p>Macbook Pro</p>
+                <p className="text-gray-400">{product.category}</p>
+                <p>{product.name}</p>
               </div>
             </div>
           ))}
