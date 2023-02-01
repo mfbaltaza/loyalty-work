@@ -8,12 +8,17 @@ import z from "zod";
 import { atom, useAtom } from "jotai";
 
 export const userAtom = atom<User | null>(null);
+export const productsAtom = atom<Product[] | null>(null);
 
-const Home: NextPage<User> = (user: User) => {
+const Home: NextPage<{ user: User; products: Array<Product> }> = (props) => {
+  console.log("PROPS", props);
+
   // We bring our state atom to the component's context
   const [, setStateAtom] = useAtom(userAtom);
-  // And we fill it with the current user info, that we get from the server
-  setStateAtom(user);
+  const [, setProductsAtom] = useAtom(productsAtom);
+  // And we fill it with the current info, that we get from the server
+  setStateAtom(props.user);
+  setProductsAtom(props.products);
 
   return (
     <>
@@ -64,57 +69,28 @@ const Home: NextPage<User> = (user: User) => {
           />
         </div>
         <div className="product-showcase grid grid-cols-1 place-items-center gap-8 pb-8 md:grid-cols-4 md:flex-row md:place-items-start">
-          <div className="product-card h-64 w-64 items-end bg-white shadow-md">
-            <div className="product-details mx-6 my-4">
-              <Image
-                className="mx-auto"
-                src="/images/product-pics/iPhone8-x1.png"
-                width={175}
-                height={175}
-                alt="Product"
-              />
-              <Separator.Root
-                className="SeparatorRoot"
-                style={{ margin: "24px 0" }}
-              />
-              <p className="text-gray-400">Laptops</p>
-              <p>Macbook Pro</p>
+          {props.products.map((product) => (
+            <div
+              key={product._id}
+              className="product-card h-64 w-64 items-end bg-white shadow-md"
+            >
+              <div className="product-details mx-6 my-4">
+                <Image
+                  className="mx-auto"
+                  src="/images/product-pics/iPhone8-x1.png"
+                  width={175}
+                  height={175}
+                  alt="Product"
+                />
+                <Separator.Root
+                  className="SeparatorRoot"
+                  style={{ margin: "24px 0" }}
+                />
+                <p className="text-gray-400">Laptops</p>
+                <p>Macbook Pro</p>
+              </div>
             </div>
-          </div>
-          <div className="product-card h-64 w-64 items-end bg-white shadow-md">
-            <div className="product-details mx-6 my-4">
-              <Image
-                className="mx-auto"
-                src="/images/product-pics/iPhone8-x1.png"
-                width={175}
-                height={175}
-                alt="Product"
-              />
-              <Separator.Root
-                className="SeparatorRoot"
-                style={{ margin: "24px 0" }}
-              />
-              <p className="text-gray-400">Laptops</p>
-              <p>Macbook Pro</p>
-            </div>
-          </div>
-          <div className="product-card h-64 w-64 items-end bg-white shadow-md">
-            <div className="product-details mx-6 my-4">
-              <Image
-                className="mx-auto"
-                src="/images/product-pics/iPhone8-x1.png"
-                width={175}
-                height={175}
-                alt="Product"
-              />
-              <Separator.Root
-                className="SeparatorRoot"
-                style={{ margin: "24px 0" }}
-              />
-              <p className="text-gray-400">Laptops</p>
-              <p>Macbook Pro</p>
-            </div>
-          </div>
+          ))}
         </div>
       </main>
     </>
@@ -135,7 +111,19 @@ const userValidator = z.object({
   __v: z.number(),
 });
 
+const productValidator = z.object({
+  img: z.object({
+    url: z.string().url(),
+    hdUrl: z.string().url(),
+  }),
+  _id: z.string(),
+  name: z.string(),
+  cost: z.number().finite(),
+  category: z.string(),
+});
+
 type User = z.infer<typeof userValidator>;
+type Product = z.infer<typeof productValidator>;
 
 // This function gets called at build time on server-side.
 // It won't be called on client-side, so you can even do
@@ -145,18 +133,32 @@ export async function getStaticProps() {
   // You can use any data fetching library
   const apiKey = process.env.API_KEY;
   if (apiKey) {
-    const res = await fetch("https://coding-challenge-api.aerolab.co/user/me", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-    });
-    const user = (await res.json()) as User;
+    const userReq = await fetch(
+      "https://coding-challenge-api.aerolab.co/user/me",
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+      }
+    );
+    const productsReq = await fetch(
+      "https://coding-challenge-api.aerolab.co/products",
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+      }
+    );
 
-    // By returning { props: user }, the Home component
-    // will receive `user` as a prop at build time
+    const user = (await userReq.json()) as User;
+    const products = (await productsReq.json()) as Product[];
+
+    // By returning { props: user, products }, the Home component
+    // will receive `{user, products}` as a prop at build time
     return {
-      props: user,
+      props: { user, products },
       revalidate: 10, // In seconds
     };
   }
