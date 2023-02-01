@@ -44,7 +44,7 @@ const Home: NextPage<{ user: User; products: Array<Product> }> = (props) => {
       <main className="mx-auto max-w-7xl">
         <div className="catalog-controls px-8 text-xl md:px-0">
           <div className="flex flex-col items-center md:flex-row">
-            <p className="product-count">16 of 32 products</p>
+            <p className="product-count">{`${props.products.length} of ${props.products.length}`} products</p>
             <Separator.Root
               className="SeparatorRoot h-8"
               decorative
