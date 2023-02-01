@@ -77,7 +77,7 @@ const Home: NextPage<{ user: User; products: Array<Product> }> = (props) => {
               <div className="product-details mx-6 my-4">
                 <Image
                   className="mx-auto"
-                  src="/images/product-pics/iPhone8-x1.png"
+                  src={product.img.url}
                   width={175}
                   height={175}
                   alt="Product"

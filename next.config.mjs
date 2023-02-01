@@ -14,5 +14,6 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  images: { domains: ['coding-challenge-api.aerolab.co'] },
 };
 export default config;
