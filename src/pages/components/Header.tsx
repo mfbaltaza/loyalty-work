@@ -4,7 +4,7 @@ import { userAtom } from "..";
 
 const Header = () => {
   const [user] = useAtom(userAtom);
-  
+
   return (
     <header className="flex justify-between px-12 py-4">
       <Image

@@ -25,8 +25,9 @@ const Home: NextPage<User> = (user: User) => {
       <Header />
       <div
         className="
-      mb-16 flex h-96
-      items-end bg-header-img bg-cover
+      bg-header-img 
+      mb-16 flex
+      h-96 items-end bg-cover
       text-5xl font-bold
       text-white
       "
@@ -62,7 +63,7 @@ const Home: NextPage<User> = (user: User) => {
             style={{ margin: "24px 0" }}
           />
         </div>
-        <div className="product-showcase flex flex-col items-center gap-8 pb-8 md:flex-row">
+        <div className="product-showcase grid grid-cols-1 place-items-center gap-8 pb-8 md:grid-cols-4 md:flex-row md:place-items-start">
           <div className="product-card h-64 w-64 items-end bg-white shadow-md">
             <div className="product-details mx-6 my-4">
               <Image
