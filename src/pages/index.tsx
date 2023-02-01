@@ -4,9 +4,17 @@ import Header from "./components/Header";
 import * as Separator from "@radix-ui/react-separator";
 import ControlBadge from "./components/ControlBadge";
 import Image from "next/image";
-// import Link from "next/link";
+import z from "zod";
+import { atom, useAtom } from "jotai";
 
-const Home: NextPage = () => {
+export const userAtom = atom<User | null>(null);
+
+const Home: NextPage<User> = (user: User) => {
+  // We bring our state atom to the component's context
+  const [, setStateAtom] = useAtom(userAtom);
+  // And we fill it with the current user info, that we get from the server
+  setStateAtom(user);
+
   return (
     <>
       <Head>
@@ -26,8 +34,8 @@ const Home: NextPage = () => {
         <p className="mx-auto mb-12 md:ml-32">Electronics</p>
       </div>
       <main className="mx-auto max-w-7xl">
-        <div className="catalog-controls text-xl px-8 md:px-0">
-          <div className="flex flex-col md:flex-row items-center">
+        <div className="catalog-controls px-8 text-xl md:px-0">
+          <div className="flex flex-col items-center md:flex-row">
             <p className="product-count">16 of 32 products</p>
             <Separator.Root
               className="SeparatorRoot h-8"
@@ -35,14 +43,14 @@ const Home: NextPage = () => {
               orientation="vertical"
               style={{ margin: "0 15px" }}
             />
-            <p className="mr-6 mb-6 md:mb-0 text-gray-400">Sort by:</p>
-            <div className="badges flex flex-col md:flex-row gap-6 mb-6 md:mb-0">
+            <p className="mr-6 mb-6 text-gray-400 md:mb-0">Sort by:</p>
+            <div className="badges mb-6 flex flex-col gap-6 md:mb-0 md:flex-row">
               <ControlBadge text="Most recent" enabled={true} />
               <ControlBadge text="Lowest price" />
               <ControlBadge text="Highest price" />
             </div>
             <Image
-              className="mx-auto md:ml-auto"
+              className="mx-auto md:mx-0 md:ml-auto"
               src="/icons/arrow-right.svg"
               height={48}
               width={48}
@@ -113,3 +121,42 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
+const userValidator = z.object({
+  _id: z.string(),
+  name: z.string({
+    required_error: "Name is required",
+    invalid_type_error: "Name must be a string",
+  }),
+  points: z.number().finite(),
+  createDate: z.string(),
+  redeemHistory: z.array(z.string()),
+  __v: z.number(),
+});
+
+type User = z.infer<typeof userValidator>;
+
+// This function gets called at build time on server-side.
+// It won't be called on client-side, so you can even do
+// direct database queries.
+export async function getStaticProps() {
+  // Call an external API endpoint to get posts.
+  // You can use any data fetching library
+  const apiKey = process.env.API_KEY;
+  if (apiKey) {
+    const res = await fetch("https://coding-challenge-api.aerolab.co/user/me", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
+    const user = (await res.json()) as User;
+
+    // By returning { props: user }, the Home component
+    // will receive `user` as a prop at build time
+    return {
+      props: user,
+      revalidate: 10, // In seconds
+    };
+  }
+}
